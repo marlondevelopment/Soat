@@ -120,12 +120,12 @@
             <div class="cajabuscar">
                 <input id="s" type="text" v-model="placa" placeholder="ingrese la Placa" label="Placa del vehículo"></input>
                 <button class="search" :disabled="placa.length==0" @click="getPlaca">Buscar</button>
-                <row>
+                <div>
                     <br>
                     <span  v-show="spinner" class="spinner">
                         <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
                         <h3>Validando placa...</h3></span>
-                </row>
+                    </div>
             </div>            
             <div v-show="encontrado" class="cajabuscar">
                 <div class="respuesta">
