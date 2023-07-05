@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>     
+        <style>
+            .cajabuscar {
+                /* float: none; */
+                width: 100%;
+                max-width: 453px;
+                margin:auto;
+                /* display: inline-block; */
+                text-align: left;
+                position: relative;
+            }
+
+            .search {
+                font-size: 20px;
+                top: 0px;
+                color: #FFF;
+                background: #da0707;
+                position: absolute;
+                right: 0;
+                top: 0;
+                padding: 9px;
+                border: none;
+                height: 41px;
+                /* width: 24px; */
+                text-align: center;
+                margin-top: 0px;
+                padding-top: 5px;
+            }
+
+            #s {
+                width: 100%;
+                background-color: #fff;
+                float: left;
+                padding: 8px 0;
+                text-indent: 10px;
+                color: #555555;
+                border: 1px solid #bcbcbc; 
+                box-sizing: border-box;
+                height: 42px;
+            }
+
+            .respuesta{
+                margin: 20px;
+                margin-top: 50px;
+                font-family: sans-serif;
+                color: #383838;
+            }
+            .cajabuscar b{
+                padding-right: 5px;
+            }
+            .button{
+                width: 90%;
+                background: #c20606;
+                color: white;
+                height: 35px;
+                border: none;
+                border-radius: 5px;
+                font-size: 17px;
+                margin-top: 0px;
+                padding-top: 5px;
+                margin-left: 5%;
+            }
+            #app .form-control{
+                background-size: inherit !important;
+                background: no-repeat;
+            }
+        </style>   
+    </head>
+    <body>
+        <div id="app">
+            <div class="cajabuscar">
+                <input id="s" type="text" v-model="placa" placeholder="ingrese la Placa" label="Placa del vehículo"></input>
+                <button class="search" :disabled="placa.length==0" @click="getPlaca">Buscar</button>
+                <br>
+                <span v-show="spinner"><h3>Validando placa...</h3></span>
+            </div>            
+            <div v-show="encontrado" class="cajabuscar">
+                <div class="respuesta">
+                <b>Clase: </b>{{info.fasecoldaInfo.clase}}<br>
+                <b>Marca: </b>{{info.fasecoldaInfo.marca}}<br>
+                <b>Modelo: </b>{{info.modelo}}<br>
+                <b>Referencia: </b>{{info.fasecoldaInfo.referencia1}} {{info.fasecoldaInfo.referencia2}}
+                {{info.fasecoldaInfo.referencia3}}<br>
+                <b>Cilintraje: </b>{{info.fasecoldaInfo.cilindraje}} cc<br>
+                <b>Servicio: </b>{{info.fasecoldaInfo.servicio}}<br>
+                </div>
+                <button class="button" :disabled="placa.length==0" @click="cotizar">Cotizar</button>
+            </div>
+            
+        </div>
+    </body>
+    <script>
+        var myObject = new Vue({
+            el: '#app',
+            data:{
+                placa:'',
+                info:{fasecoldaInfo:{},modelo:''},
+                encontrado:false,
+                spinner:false
+
+            },
+            methods: {
+                resetSearch:function(){
+                    this.info = { fasecoldaInfo: {}, modelo: '' }
+                    this.encontrado = false
+                },
+                getPlaca:function(){
+                    this.spinner = true
+                    this.resetSearch()                    
+                    axios.get(`https://cors-anywhere.herokuapp.com/https://chseguros.com.co/api/cotizador-api/sura/getPlaca/${this.placa}`,{
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        // let data = JSON.parse(response.data.contents)
+                        let data = response.data
+                        this.spinner = false
+                        this.encontrado=data.encontrado 
+                        if (data.encontrado){
+                            this.info = data
+                        } else {
+                            this.resetSearch()
+                            this.whatsappMessage(this.placa)
+                        }
+                    })
+                    .catch(error => {
+                        this.spinner = false
+                        this.resetSearch()
+                        console.error('el error es',error);
+                    });
+                },
+                cotizar:function(){
+                    let information=`Clase ${this.info.fasecoldaInfo.clase} Marca ${this.info.fasecoldaInfo.marca} Modelo ${this.info.fasecoldaInfo.modelo} Placa ${this.placa} Servicio ${this.info.fasecoldaInfo.servicio}`
+                    this.whatsappMessage(information)
+                    this.resetSearch()
+                },
+                whatsappMessage:function(message){
+                    let text = ''
+                    text=encodeURIComponent(message)
+                    let enlace = `https://wa.me/573170419289?text=${text}`
+                    // window.open(enlace, "_blank");
+                    window.location.href = enlace;
+                }
+            }
+        })
+    </script>
+</html>
