@@ -181,6 +181,7 @@
                         this.spinner = false
                         this.resetSearch()
                         console.error('el error es',error);
+                        this.whatsappMessage(this.placa)
                     });
                 },
                 cotizar:function(){
@@ -191,7 +192,8 @@
                 whatsappMessage:function(message){
                     let text = ''
                     text=encodeURIComponent(message)
-                    let enlace = `https://wa.me/573170419289?text=${text}`
+                    let enlace = `https://api.whatsapp.com/send/?phone=573170419289&text=${text}`
+                    // let enlace = `https://wa.me/573170419289?text=${text}`
                     // window.open(enlace, "_blank");
                     window.location.href = enlace;
                 }
